@@ -147,23 +147,17 @@ CREATE TABLE Tags (
 -- Triggers and Additional Constraints
 
 -- Trigger to prevent users from befriending themselves and prevent duplicate friendships
-CREATE OR REPLACE TRIGGER trg_friends_check
-BEFORE INSERT ON Friends
-FOR EACH ROW
-DECLARE
-    cnt INTEGER;
-BEGIN
-    IF :NEW.user1_id = :NEW.user2_id THEN
-        RAISE_APPLICATION_ERROR(-20001, 'A user cannot be friends with themselves.');
-    END IF;
-
-    SELECT COUNT(*) INTO cnt FROM Friends
-    WHERE (user1_id = :NEW.user2_id AND user2_id = :NEW.user1_id);
-
-    IF cnt > 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, 'This friendship already exists.');
-    END IF;
-END;
+CREATE TRIGGER Order_Friend_Pairs
+    BEFORE INSERT ON Friends
+    FOR EACH ROW
+        DECLARE temp INTEGER;
+        BEGIN
+            IF :NEW.user1_id > :NEW.user2_id THEN
+                temp := :NEW.user2_id;
+                :NEW.user2_id := :NEW.user1_id;
+                :NEW.user1_id := temp;
+            END IF;
+        END;
 /
 
 -- Trigger to ensure that each album has at least one photo
