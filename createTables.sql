@@ -1,3 +1,9 @@
+CREATE SEQUENCE city_id_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE program_id_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE event_id_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE album_id_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE photo_id_seq START WITH 1 INCREMENT BY 1;
+
 -- Create Users table
 CREATE TABLE Users (
     user_id INTEGER PRIMARY KEY,
@@ -8,6 +14,7 @@ CREATE TABLE Users (
     day_of_birth INTEGER,
     gender VARCHAR2(100)
 );
+
 
 -- Create Cities table
 CREATE TABLE Cities (
@@ -40,8 +47,7 @@ CREATE TABLE Friends (
     user2_id INTEGER NOT NULL,
     PRIMARY KEY (user1_id, user2_id),
     FOREIGN KEY (user1_id) REFERENCES Users(user_id),
-    FOREIGN KEY (user2_id) REFERENCES Users(user_id),
-    CHECK (user1_id < user2_id)
+    FOREIGN KEY (user2_id) REFERENCES Users(user_id)
 );
 
 -- Create Programs table
@@ -89,7 +95,8 @@ CREATE TABLE User_Events (
     event_start_time TIMESTAMP,
     event_end_time TIMESTAMP,
     FOREIGN KEY (event_creator_id) REFERENCES Users(user_id),
-    FOREIGN KEY (event_city_id) REFERENCES Cities(city_id)
+    FOREIGN KEY (event_city_id) REFERENCES Cities(city_id),
+    CHECK (event_start_time < event_end_time)
 );
 
 -- Create Participants table
@@ -115,6 +122,7 @@ CREATE TABLE Albums (
     cover_photo_id INTEGER NOT NULL,
     FOREIGN KEY (album_owner_id) REFERENCES Users(user_id),
     CHECK (album_visibility IN ('Everyone', 'Friends', 'Friends_Of_Friends', 'Myself'))
+    CHECK (album_modified_time IS NULL OR album_created_time <= album_modified_time)
 );
 
 -- Create Photos table
@@ -126,6 +134,7 @@ CREATE TABLE Photos (
     photo_modified_time TIMESTAMP,
     photo_link VARCHAR2(2000) NOT NULL,
     FOREIGN KEY (album_id) REFERENCES Albums(album_id)
+    CHECK (photo_modified_time IS NULL OR photo_created_time <= photo_created_time)
 );
 
 -- Alter Albums to add foreign key to Photos (for cover_photo_id)
@@ -139,12 +148,54 @@ CREATE TABLE Tags (
     tag_created_time TIMESTAMP NOT NULL,
     tag_x NUMBER NOT NULL,
     tag_y NUMBER NOT NULL,
-    PRIMARY KEY (tag_photo_id, tag_subject_id),
+    PRIMARY KEY (tag_photo_id, tag_subject_id, tag_x, tag_y),
     FOREIGN KEY (tag_photo_id) REFERENCES Photos(photo_id),
     FOREIGN KEY (tag_subject_id) REFERENCES Users(user_id)
 );
 
--- Triggers and Additional Constraints
+CREATE TRIGGER city_id_trigger
+BEFORE INSERT ON Cities
+FOR EACH ROW
+BEGIN
+    SELECT city_id_seq.NEXTVAL INTO :NEW.city_id FROM dual;
+END;
+/
+
+-- Trigger for program_id in Programs table
+CREATE TRIGGER program_id_trigger
+BEFORE INSERT ON Programs
+FOR EACH ROW
+BEGIN
+    SELECT program_id_seq.NEXTVAL INTO :NEW.program_id FROM dual;
+END;
+/
+
+-- Trigger for event_id in User_Events table
+CREATE TRIGGER event_id_trigger
+BEFORE INSERT ON User_Events
+FOR EACH ROW
+BEGIN
+    SELECT event_id_seq.NEXTVAL INTO :NEW.event_id FROM dual;
+END;
+/
+
+-- Trigger for album_id in Albums table
+CREATE TRIGGER album_id_trigger
+BEFORE INSERT ON Albums
+FOR EACH ROW
+BEGIN
+    SELECT album_id_seq.NEXTVAL INTO :NEW.album_id FROM dual;
+END;
+/
+
+-- Trigger for photo_id in Photos table
+CREATE TRIGGER photo_id_trigger
+BEFORE INSERT ON Photos
+FOR EACH ROW
+BEGIN
+    SELECT photo_id_seq.NEXTVAL INTO :NEW.photo_id FROM dual;
+END;
+/
 
 -- Trigger to prevent users from befriending themselves and prevent duplicate friendships
 CREATE TRIGGER Order_Friend_Pairs
@@ -159,25 +210,3 @@ CREATE TRIGGER Order_Friend_Pairs
             END IF;
         END;
 /
-
--- Trigger to ensure that each album has at least one photo
-CREATE OR REPLACE TRIGGER trg_album_photo_check
-AFTER DELETE ON Photos
-FOR EACH ROW
-DECLARE
-    cnt INTEGER;
-BEGIN
-    SELECT COUNT(*) INTO cnt FROM Photos WHERE album_id = :OLD.album_id;
-    IF cnt = 0 THEN
-        RAISE_APPLICATION_ERROR(-20003, 'An album must contain at least one photo.');
-    END IF;
-END;
-/
-
--- Additional Constraints
-
--- Unique constraint on combination of city_name, state_name, country_name in Cities table
--- Already added in Cities table definition
-
--- Unique constraint on combination of institution, concentration, degree in Programs table
--- Already added in Programs table definition

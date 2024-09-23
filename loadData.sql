@@ -4,7 +4,7 @@ SELECT DISTINCT user_id, first_name, last_name, year_of_birth, month_of_birth, d
 FROM project1.Public_User_Information;
 
 -- Load data into Cities table
--- Collect all unique cities from users' current and hometown cities and events
+INSERT INTO Cities (city_id, city_name, state_name, country_name)
 WITH Unique_Cities AS (
     SELECT DISTINCT current_city AS city_name, current_state AS state_name, current_country AS country_name
     FROM project1.Public_User_Information
@@ -15,10 +15,10 @@ WITH Unique_Cities AS (
     SELECT DISTINCT event_city AS city_name, event_state AS state_name, event_country AS country_name
     FROM project1.Public_Event_Information
 )
-INSERT INTO Cities (city_id, city_name, state_name, country_name)
 SELECT ROW_NUMBER() OVER (ORDER BY city_name, state_name, country_name) AS city_id,
        city_name, state_name, country_name
 FROM Unique_Cities;
+
 
 -- Load data into User_Current_Cities table
 INSERT INTO User_Current_Cities (user_id, current_city_id)
@@ -27,7 +27,6 @@ SELECT DISTINCT u.user_id,
      WHERE c.city_name = u.current_city AND c.state_name = u.current_state AND c.country_name = u.current_country)
 FROM project1.Public_User_Information u;
 
--- Load data into User_Hometown_Cities table
 INSERT INTO User_Hometown_Cities (user_id, hometown_city_id)
 SELECT DISTINCT u.user_id,
     (SELECT c.city_id FROM Cities c
@@ -35,12 +34,12 @@ SELECT DISTINCT u.user_id,
 FROM project1.Public_User_Information u;
 
 -- Load data into Programs table
+INSERT INTO Programs (program_id, institution, concentration, degree)
 WITH Unique_Programs AS (
     SELECT DISTINCT institution_name AS institution, program_concentration AS concentration, program_degree AS degree
     FROM project1.Public_User_Information
     WHERE institution_name IS NOT NULL
 )
-INSERT INTO Programs (program_id, institution, concentration, degree)
 SELECT ROW_NUMBER() OVER (ORDER BY institution, concentration, degree) AS program_id,
        institution, concentration, degree
 FROM Unique_Programs;

@@ -1,18 +1,41 @@
--- Drop Triggers
-DROP TRIGGER trg_friends_check;
-DROP TRIGGER trg_album_photo_check;
+DROP TRIGGER Order_Friend_Pairs;
 
--- Drop Tables in correct order to avoid dependency issues
-DROP TABLE Tags;
-DROP TABLE Participants;
-DROP TABLE Photos;
-DROP TABLE Albums;
-DROP TABLE Messages;
-DROP TABLE Education;
-DROP TABLE Friends;
-DROP TABLE User_Hometown_Cities;
-DROP TABLE User_Current_Cities;
-DROP TABLE User_Events;
-DROP TABLE Programs;
-DROP TABLE Cities;
-DROP TABLE Users;
+DROP TRIGGER photo_id_trigger;
+DROP TRIGGER album_id_trigger;
+DROP TRIGGER event_id_trigger;
+DROP TRIGGER program_id_trigger;
+DROP TRIGGER city_id_trigger;
+
+
+DROP TABLE Tags CASCADE CONSTRAINTS;
+
+DROP TABLE Photos CASCADE CONSTRAINTS;
+
+DROP TABLE Albums CASCADE CONSTRAINTS;
+
+DROP TABLE Participants CASCADE CONSTRAINTS;
+
+DROP TABLE User_Events CASCADE CONSTRAINTS;
+
+DROP TABLE Messages CASCADE CONSTRAINTS;
+
+DROP TABLE Education CASCADE CONSTRAINTS;
+
+DROP TABLE Programs CASCADE CONSTRAINTS;
+
+DROP TABLE Friends CASCADE CONSTRAINTS;
+
+DROP TABLE User_Hometown_Cities CASCADE CONSTRAINTS;
+
+DROP TABLE User_Current_Cities CASCADE CONSTRAINTS;
+
+DROP TABLE Cities CASCADE CONSTRAINTS;
+
+DROP TABLE Users CASCADE CONSTRAINTS;
+
+DROP SEQUENCE photo_id_seq;
+DROP SEQUENCE album_id_seq;
+DROP SEQUENCE event_id_seq;
+DROP SEQUENCE program_id_seq;
+DROP SEQUENCE city_id_seq;
+
