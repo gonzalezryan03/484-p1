@@ -1,7 +1,4 @@
 DROP TRIGGER Order_Friend_Pairs;
-
-DROP TRIGGER photo_id_trigger;
-DROP TRIGGER album_id_trigger;
 DROP TRIGGER event_id_trigger;
 DROP TRIGGER program_id_trigger;
 DROP TRIGGER city_id_trigger;
@@ -33,8 +30,6 @@ DROP TABLE Cities CASCADE CONSTRAINTS;
 
 DROP TABLE Users CASCADE CONSTRAINTS;
 
-DROP SEQUENCE photo_id_seq;
-DROP SEQUENCE album_id_seq;
 DROP SEQUENCE event_id_seq;
 DROP SEQUENCE program_id_seq;
 DROP SEQUENCE city_id_seq;

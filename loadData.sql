@@ -59,19 +59,17 @@ SELECT DISTINCT LEAST(user1_id, user2_id) AS user1_id,
                 GREATEST(user1_id, user2_id) AS user2_id
 FROM project1.Public_Are_Friends;
 
--- Load data into Albums table
-INSERT INTO Albums (album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id)
-SELECT album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id
-FROM (
-    SELECT album_id, owner_id AS album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id,
-           ROW_NUMBER() OVER (PARTITION BY album_id ORDER BY cover_photo_id) AS rn
-    FROM project1.Public_Photo_Information
-) WHERE rn = 1;
+SET AUTOCOMMIT OFF;
 
--- Load data into Photos table
-INSERT INTO Photos (photo_id, album_id, photo_caption, photo_created_time, photo_modified_time, photo_link)
+INSERT INTO Albums(album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id)
+SELECT DISTINCT album_id, owner_id AS album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id
+FROM project1.Public_Photo_Information;
+
+INSERT INTO Photos(photo_id, album_id, photo_caption, photo_created_time, photo_modified_time, photo_link)
 SELECT DISTINCT photo_id, album_id, photo_caption, photo_created_time, photo_modified_time, photo_link
 FROM project1.Public_Photo_Information;
+
+SET AUTOCOMMIT ON;
 
 -- Load data into Tags table
 INSERT INTO Tags (tag_photo_id, tag_subject_id, tag_created_time, tag_x, tag_y)

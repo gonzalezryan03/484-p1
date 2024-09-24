@@ -81,7 +81,7 @@ CREATE TABLE Messages (
 
 -- Create User_Events table
 CREATE TABLE User_Events (
-    event_id INTEGER PRIMARY KEY,
+    event_id INTEGER,
     event_creator_id INTEGER NOT NULL,
     event_name VARCHAR2(100) NOT NULL,
     event_tagline VARCHAR2(100),
@@ -93,13 +93,9 @@ CREATE TABLE User_Events (
     event_city_id INTEGER NOT NULL,
     event_start_time TIMESTAMP,
     event_end_time TIMESTAMP,
+    PRIMARY KEY (event_id),
     FOREIGN KEY (event_creator_id) REFERENCES Users(user_id),
-    FOREIGN KEY (event_city_id) REFERENCES Cities(city_id),
-    CHECK(
-        event_start_time IS NULL 
-        OR event_end_time IS NULL 
-        OR event_start_time < event_end_time
-    )
+    FOREIGN KEY (event_city_id) REFERENCES Cities(city_id)
 );
 
 -- Create Participants table
@@ -125,7 +121,6 @@ CREATE TABLE Albums (
     cover_photo_id INTEGER NOT NULL,
     FOREIGN KEY (album_owner_id) REFERENCES Users(user_id),
     CHECK (album_visibility IN ('Everyone', 'Friends', 'Friends_Of_Friends', 'Myself')),
-    CHECK (album_modified_time IS NULL OR album_created_time <= album_modified_time)
 );
 
 -- Create Photos table
@@ -136,9 +131,17 @@ CREATE TABLE Photos (
     photo_created_time TIMESTAMP NOT NULL,
     photo_modified_time TIMESTAMP,
     photo_link VARCHAR2(2000) NOT NULL,
-    FOREIGN KEY (album_id) REFERENCES Albums(album_id),
-    CHECK (photo_modified_time IS NULL OR photo_created_time <= photo_modified_time)
 );
+
+ALTER TABLE Albums
+ADD CONSTRAINT fk_cover_photo
+FOREIGN KEY (cover_photo_id) REFERENCES Photos(photo_id)
+INITIALLY DEFERRED DEFERRABLE;
+
+ALTER TABLE Photos
+ADD CONSTRAINT fk_album_id
+FOREIGN KEY (album_id) REFERENCES Albums
+INITIALLY DEFERRED DEFERRABLE;
 
 -- Create Tags table
 CREATE TABLE Tags (
