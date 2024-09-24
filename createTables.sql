@@ -145,12 +145,12 @@ INITIALLY DEFERRED DEFERRABLE;
 
 -- Create Tags table
 CREATE TABLE Tags (
-    tag_photo_id INTEGER NOT NULL,
-    tag_subject_id INTEGER NOT NULL,
+    tag_photo_id INTEGER,
+    tag_subject_id INTEGER,
     tag_created_time TIMESTAMP NOT NULL,
     tag_x NUMBER NOT NULL,
     tag_y NUMBER NOT NULL,
-    PRIMARY KEY (tag_photo_id, tag_subject_id, tag_x, tag_y),
+    PRIMARY KEY (tag_photo_id, tag_subject_id),
     FOREIGN KEY (tag_photo_id) REFERENCES Photos(photo_id),
     FOREIGN KEY (tag_subject_id) REFERENCES Users(user_id)
 );
