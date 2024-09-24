@@ -1,88 +1,89 @@
--- View 1: View_User_Information
+
+-- Create View 1: View_User_Information
 CREATE OR REPLACE VIEW View_User_Information AS
-SELECT 
-    U.user_id,
-    U.first_name,
-    U.last_name,
-    U.year_of_birth,
-    U.month_of_birth,
-    U.day_of_birth,
-    U.gender,
-    H.city_name AS hometown_city,
-    C.city_name AS current_city
-FROM 
-    Users U
-LEFT JOIN User_Hometown_Cities UH ON U.user_id = UH.user_id
-LEFT JOIN Cities H ON UH.hometown_city_id = H.city_id
-LEFT JOIN User_Current_Cities UC ON U.user_id = UC.user_id
-LEFT JOIN Cities C ON UC.current_city_id = C.city_id;
+SELECT
+    u.user_id,
+    u.first_name,
+    u.last_name,
+    u.year_of_birth,
+    u.month_of_birth,
+    u.day_of_birth,
+    u.gender,
+    cc.city_name AS current_city,
+    cc.state_name AS current_state,
+    cc.country_name AS current_country,
+    hc.city_name AS hometown_city,
+    hc.state_name AS hometown_state,
+    hc.country_name AS hometown_country,
+    p.institution AS institution_name,
+    e.program_year,
+    p.concentration AS program_concentration,
+    p.degree AS program_degree
+FROM
+    Users u
+LEFT JOIN User_Current_Cities ucc ON u.user_id = ucc.user_id
+LEFT JOIN Cities cc ON ucc.current_city_id = cc.city_id
+LEFT JOIN User_Hometown_Cities uhc ON u.user_id = uhc.user_id
+LEFT JOIN Cities hc ON uhc.hometown_city_id = hc.city_id
+LEFT JOIN Education e ON u.user_id = e.user_id
+LEFT JOIN Programs p ON e.program_id = p.program_id;
 
--- View 2: View_Are_Friends
+-- Create View 2: View_Are_Friends
 CREATE OR REPLACE VIEW View_Are_Friends AS
-SELECT 
-    F.user1_id,
-    F.user2_id,
-    U1.first_name AS user1_first_name,
-    U1.last_name AS user1_last_name,
-    U2.first_name AS user2_first_name,
-    U2.last_name AS user2_last_name
-FROM 
-    Friends F
-JOIN Users U1 ON F.user1_id = U1.user_id
-JOIN Users U2 ON F.user2_id = U2.user_id;
+SELECT
+    f.user1_id,
+    f.user2_id
+FROM
+    Friends f;
 
--- View 3: View_Photo_Information
+-- Create View 3: View_Photo_Information
 CREATE OR REPLACE VIEW View_Photo_Information AS
-SELECT 
-    P.photo_id,
-    P.album_id,
-    A.album_name,
-    P.photo_caption,
-    P.photo_created_time,
-    P.photo_modified_time,
-    P.photo_link,
-    A.album_owner_id,
-    U.first_name AS album_owner_first_name,
-    U.last_name AS album_owner_last_name
-FROM 
-    Photos P
-JOIN Albums A ON P.album_id = A.album_id
-JOIN Users U ON A.album_owner_id = U.user_id;
+SELECT
+    p.album_id,
+    a.album_owner_id AS owner_id,
+    a.cover_photo_id,
+    a.album_name,
+    a.album_created_time,
+    a.album_modified_time,
+    a.album_link,
+    a.album_visibility,
+    p.photo_id,
+    p.photo_caption,
+    p.photo_created_time,
+    p.photo_modified_time,
+    p.photo_link
+FROM
+    Photos p
+JOIN Albums a ON p.album_id = a.album_id;
 
--- View 4: View_Event_Information
+-- Create View 4: View_Event_Information
 CREATE OR REPLACE VIEW View_Event_Information AS
-SELECT 
-    E.event_id,
-    E.event_name,
-    E.event_tagline,
-    E.event_description,
-    E.event_host,
-    E.event_type,
-    E.event_subtype,
-    E.event_address,
-    C.city_name AS event_city,
-    E.event_start_time,
-    E.event_end_time,
-    U.user_id AS event_creator_id,
-    U.first_name AS event_creator_first_name,
-    U.last_name AS event_creator_last_name
-FROM 
-    User_Events E
-JOIN Cities C ON E.event_city_id = C.city_id
-JOIN Users U ON E.event_creator_id = U.user_id;
+SELECT
+    ue.event_id,
+    ue.event_creator_id,
+    ue.event_name,
+    ue.event_tagline,
+    ue.event_description,
+    ue.event_host,
+    ue.event_type,
+    ue.event_subtype,
+    ue.event_address,
+    c.city_name AS event_city,
+    c.state_name AS event_state,
+    c.country_name AS event_country,
+    ue.event_start_time,
+    ue.event_end_time
+FROM
+    User_Events ue
+JOIN Cities c ON ue.event_city_id = c.city_id;
 
--- View 5: View_Tag_Information
+-- Create View 5: View_Tag_Information
 CREATE OR REPLACE VIEW View_Tag_Information AS
-SELECT 
-    T.tag_photo_id,
-    T.tag_subject_id,
-    P.photo_link,
-    U.first_name AS tag_subject_first_name,
-    U.last_name AS tag_subject_last_name,
-    T.tag_x,
-    T.tag_y,
-    T.tag_created_time
-FROM 
-    Tags T
-JOIN Users U ON T.tag_subject_id = U.user_id
-JOIN Photos P ON T.tag_photo_id = P.photo_id;
+SELECT
+    t.tag_photo_id AS photo_id,
+    t.tag_subject_id,
+    t.tag_created_time,
+    t.tag_x AS tag_x_coordinate,
+    t.tag_y AS tag_y_coordinate
+FROM
+    Tags t;

@@ -59,25 +59,19 @@ SELECT DISTINCT LEAST(user1_id, user2_id) AS user1_id,
                 GREATEST(user1_id, user2_id) AS user2_id
 FROM project1.Public_Are_Friends;
 
--- Load data into Albums table (without cover_photo_id)
-INSERT INTO Albums (album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility)
-SELECT DISTINCT album_id, owner_id AS album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility
-FROM project1.Public_Photo_Information;
+-- Load data into Albums table
+INSERT INTO Albums (album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id)
+SELECT album_id, album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id
+FROM (
+    SELECT album_id, owner_id AS album_owner_id, album_name, album_created_time, album_modified_time, album_link, album_visibility, cover_photo_id,
+           ROW_NUMBER() OVER (PARTITION BY album_id ORDER BY cover_photo_id) AS rn
+    FROM project1.Public_Photo_Information
+) WHERE rn = 1;
 
 -- Load data into Photos table
 INSERT INTO Photos (photo_id, album_id, photo_caption, photo_created_time, photo_modified_time, photo_link)
 SELECT DISTINCT photo_id, album_id, photo_caption, photo_created_time, photo_modified_time, photo_link
 FROM project1.Public_Photo_Information;
-
--- Update Albums table to set cover_photo_id
-MERGE INTO Albums a
-USING (
-    SELECT DISTINCT album_id, cover_photo_id
-    FROM project1.Public_Photo_Information
-) p
-ON (a.album_id = p.album_id)
-WHEN MATCHED THEN
-UPDATE SET a.cover_photo_id = p.cover_photo_id;
 
 -- Load data into Tags table
 INSERT INTO Tags (tag_photo_id, tag_subject_id, tag_created_time, tag_x, tag_y)
@@ -93,3 +87,4 @@ SELECT e.event_id, e.event_creator_id, e.event_name, e.event_tagline, e.event_de
         WHERE c.city_name = e.event_city AND c.state_name = e.event_state AND c.country_name = e.event_country),
        e.event_start_time, e.event_end_time
 FROM project1.Public_Event_Information e;
+

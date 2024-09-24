@@ -1,8 +1,7 @@
 CREATE SEQUENCE city_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE program_id_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE event_id_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE album_id_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE photo_id_seq START WITH 1 INCREMENT BY 1;
+
 
 -- Create Users table
 CREATE TABLE Users (
@@ -96,7 +95,11 @@ CREATE TABLE User_Events (
     event_end_time TIMESTAMP,
     FOREIGN KEY (event_creator_id) REFERENCES Users(user_id),
     FOREIGN KEY (event_city_id) REFERENCES Cities(city_id),
-    CHECK (event_start_time < event_end_time)
+    CHECK(
+        event_start_time IS NULL 
+        OR event_end_time IS NULL 
+        OR event_start_time < event_end_time
+    )
 );
 
 -- Create Participants table
@@ -121,7 +124,7 @@ CREATE TABLE Albums (
     album_visibility VARCHAR2(100) NOT NULL,
     cover_photo_id INTEGER NOT NULL,
     FOREIGN KEY (album_owner_id) REFERENCES Users(user_id),
-    CHECK (album_visibility IN ('Everyone', 'Friends', 'Friends_Of_Friends', 'Myself'))
+    CHECK (album_visibility IN ('Everyone', 'Friends', 'Friends_Of_Friends', 'Myself')),
     CHECK (album_modified_time IS NULL OR album_created_time <= album_modified_time)
 );
 
@@ -133,13 +136,9 @@ CREATE TABLE Photos (
     photo_created_time TIMESTAMP NOT NULL,
     photo_modified_time TIMESTAMP,
     photo_link VARCHAR2(2000) NOT NULL,
-    FOREIGN KEY (album_id) REFERENCES Albums(album_id)
-    CHECK (photo_modified_time IS NULL OR photo_created_time <= photo_created_time)
+    FOREIGN KEY (album_id) REFERENCES Albums(album_id),
+    CHECK (photo_modified_time IS NULL OR photo_created_time <= photo_modified_time)
 );
-
--- Alter Albums to add foreign key to Photos (for cover_photo_id)
-ALTER TABLE Albums
-ADD FOREIGN KEY (cover_photo_id) REFERENCES Photos(photo_id);
 
 -- Create Tags table
 CREATE TABLE Tags (
@@ -179,23 +178,6 @@ BEGIN
 END;
 /
 
--- Trigger for album_id in Albums table
-CREATE TRIGGER album_id_trigger
-BEFORE INSERT ON Albums
-FOR EACH ROW
-BEGIN
-    SELECT album_id_seq.NEXTVAL INTO :NEW.album_id FROM dual;
-END;
-/
-
--- Trigger for photo_id in Photos table
-CREATE TRIGGER photo_id_trigger
-BEFORE INSERT ON Photos
-FOR EACH ROW
-BEGIN
-    SELECT photo_id_seq.NEXTVAL INTO :NEW.photo_id FROM dual;
-END;
-/
 
 -- Trigger to prevent users from befriending themselves and prevent duplicate friendships
 CREATE TRIGGER Order_Friend_Pairs
